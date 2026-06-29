@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Evaluation {
+  id             String   @id @default(uuid())
+  content        String
+  inputType      String   @default("text") @map("input_type")
+  imageData      String?  @map("image_data")
+  contentType    String?  @map("content_type")
+  targetAudience String?  @map("target_audience")
+  platform       String?
+  goal           String?
+  agentCount     Int      @default(5) @map("agent_count")
+  status         String   @default("PENDING")
+  overallScore   Float?   @map("overall_score")
+  sessionId      String   @map("session_id")
+  error          String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  personas     Persona[]
+  seniorReport SeniorReport?
+
+  @@map("evaluations")
+}
+
+model Persona {
+  id           String  @id @default(uuid())
+  evaluationId String  @map("evaluation_id")
+  name         String
+  role         String
+  background   String
+  perspective  String
+  tone         String
+  score        Float?
+  reaction     String?
+  strengths    String?
+  improvements String?
+  suggestions  String?
+  completed    Boolean @default(false)
+  error        String?
+
+  evaluation Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  @@map("personas")
+}
+
+model SeniorReport {
+  id           String @id @default(uuid())
+  evaluationId String @unique @map("evaluation_id")
+  summary      String
+  overallScore Float  @map("overall_score")
+  strengths    String
+  improvements String
+  actionItems  String @map("action_items")
+  rewrite      String?
+
+  evaluation Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  @@map("senior_reports")
+}
